@@ -228,6 +228,5 @@ after_success:
 
   - |
     if [ -n "${ENABLE_NODE_BINDINGS}" ]; then
-      source ./scripts/travis/build.sh
       ./scripts/travis/publish.sh
     fi
