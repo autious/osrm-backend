@@ -29,14 +29,19 @@ fi
 
 echo "determining publishing status..."
 
+export COMMIT_MESSAGE=$(git log --format=%B --no-merges | head -n 1 | tr -d '\n')
+echo "Commit message: ${COMMIT_MESSAGE}"
+
 if [[ $(./scripts/travis/is_pr_merge.sh) ]]; then
-    echo "Skipping publishing because this is a PR merge commit"
+    if [[ ${COMMIT_MESSAGE} =~ "[force publish binary]" ]]; then
+        echo "Publishing because it's forced"
+        ./node_modules/.bin/node-pre-gyp publish ${NPM_FLAGS}
+    else
+        echo "Skipping publishing because this is a PR merge commit"
+    fi
 else
     echo "This is a push commit, continuing to package..."
     ./node_modules/.bin/node-pre-gyp package ${NPM_FLAGS}
-
-    export COMMIT_MESSAGE=$(git log --format=%B --no-merges | head -n 1 | tr -d '\n')
-    echo "Commit message: ${COMMIT_MESSAGE}"
 
     if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
         echo "Publishing"
